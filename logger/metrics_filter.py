@@ -22,7 +22,10 @@ class MetricsFilter(object):
         slog.debug("line:{0}".format(line))
 
         payload = None
+        if line[-1] == '\n':
+            line = line[:-1]
 
+        line = line.decode('utf8')
         if line.find("metrics") == -1:
             return None
 

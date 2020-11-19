@@ -88,7 +88,6 @@ class ReportAlarm(object):
             digest = hashlib.sha256(msg_str).hexdigest()
         else:
             m = msg_str[:64] + msg_str[-64:]
-            print(m)
             digest = hashlib.sha256(m.encode('utf8')).hexdigest()
 
         payload['sign'] = digest
