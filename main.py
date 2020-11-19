@@ -1,50 +1,131 @@
 #!/usr/bin/env python
 #-*- coding:utf8 -*-
 
-import queue
+import time
+from multiprocessing import Process, Queue, Lock, Manager
 
+# log eater
+from logger.log_eater import LogEater
+
+# metrics filter, get metrics log which will be putted to remote
 from logger.metrics_filter  import MetricsFilter
+
+# every kind of modules
 from logger.demo_module import DemoModule
 from logger.p2p_module import P2pModule
 from logger.contract_module import ContractModule
+
+# report alarm to remote
 from reporter.report_alarm import ReportAlarm 
 
 import common.config as config
 from common.slogging import slog
 
 
+#######global var#########
 
-QueueMap = {
-        0: queue.Queue(config.QMAXSIZE),
-        1: queue.Queue(config.QMAXSIZE),
-        2: queue.Queue(config.QMAXSIZE),
+# store log line from (tail -f)
+LogQueue = Queue(config.QMAXSIZE)
+
+# store alarm data(readonly, use in multiprocess)
+AlarmQueueMap = {
+        0: Queue(config.QMAXSIZE),
+        1: Queue(config.QMAXSIZE),
+        2: Queue(config.QMAXSIZE),
         }
 
-# register module here
+# register module here(readonly, use in multiprocess)
 ModuleMap = {
         'demo': DemoModule.run,
         'p2p': P2pModule.run,
         'contract': ContractModule.run,
         }
 
-local_info_conf = config.LocalInfo
 
-line_debug = 'xbase-11:50:53.416-T27630:[Debug]-(xudp_socket.cc: SendDataWithProp:594): [metrics]{"category":"demo","tag":"bbb","type":"sometype","content":{"key1":"value1","key2":"value2"}}'
+####### func begin ########
 
-line_release = 'xnetwork-02:16:51.450-T32679:[Keyfo]-(): [metrics]{"category":"demo","tag":"bbb","type":"sometype","content":{"key1":"value1","key2":"value2"}}'
 
-p2p_config = config.P2pConfig
-p2p_config['local_info'] = local_info_conf
+# log eater: eat the last log line and store in log queue
+def run_logeater():
+    global LogQueue
 
-payload =  MetricsFilter.run(line_debug)
-category = payload.get('category')
+    log_path = config.LogEaterConfig.get('log_path')
+    if not log_path:
+        slog.error("invalid log_path:{0}".format(log_path))
+        return
 
-ModuleFunc = ModuleMap.get(category)
-if ModuleFunc:
-    ModuleFunc(payload, QueueMap, p2p_config)
-else:
-    slog.error("category:{0} not support, filter failed".format(category))
+    logeater = LogEater(LogQueue, log_path)
 
-report_conf = config.ReportConfig
-alarm_reporter = ReportAlarm(QueueMap, report_conf)
-alarm_reporter.run()
+    # will block here
+    logeater.run()
+
+
+def run_loganalyzer(shared_local_info):
+    global LogQueue, AlarmQueueMap, ModuleFunc
+
+    while True:
+        log_line = ''
+        try:
+            # block here, wait log line ready
+            log_line = LogQueue.get(block = True)
+        except Exception as e:
+            slog.warn("catch exception:{0} when get from log queue".format(e))
+            continue
+
+        payload =  MetricsFilter.run(log_line)
+        if not payload:
+            continue
+
+        category = payload.get('category')
+        ModuleFunc = ModuleMap.get(category)
+        if not ModuleFunc:
+            slog.error("category:{0} not support, filter failed".format(category))
+            continue
+
+        conf = config.AnalyzeConfig.get(category)
+        ModuleFunc(payload, AlarmQueueMap, conf, shared_local_info)
+
+def run_logreporter():
+    global AlarmQueueMap
+    report_conf = config.ReportConfig
+    alarm_reporter = ReportAlarm(AlarmQueueMap, report_conf)
+    # will block here if no data
+    alarm_reporter.run()
+
+
+if __name__ == '__main__':
+    with Manager() as MG:
+        # shared dict with other process
+        shared_local_info = MG.dict()
+        shared_local_info['tnode'] = ''
+        shared_local_info['ip'] = ''
+
+
+        # create log eater process
+        pg_logeater = Process(target=run_logeater, args=())
+
+
+        # create log analyzer process
+        pg_loganalyzers = []
+        an_worker = config.AnalyzeConfig.get('worker')
+        for i in range(an_worker):
+            pg_loganalyzers.append(Process(target = run_loganalyzer, args=(shared_local_info,)))
+
+        # create log reporter process
+        pg_logreporters = []
+        re_worker = config.ReportConfig.get('worker')
+        for j in range(re_worker):
+            pg_logreporters.append(Process(target = run_logreporter, args = ()))
+
+
+        # start all process
+        pg_logeater.start()
+
+        for p in pg_loganalyzers:
+            p.start()
+
+        for p in pg_logreporters:
+            p.start()
+
+        while True:
+            time.sleep(1)

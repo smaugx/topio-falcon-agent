@@ -31,15 +31,16 @@ class BaseModule(object):
 
     # @param line log line
     # @param qmap  map of queue with priority
+    # @param shared_info  shared info between all process
     # @param conf module config
     #
     # @return
     @classmethod
-    def run(cls, payload, qmap, conf):
+    def run(cls, payload, qmap, conf, shared_info):
         slog.debug("BaseModule run begin")
 
         priority = 2
-        status = cls.package_alarm(payload, qmap, conf, priority)
+        status = cls.package_alarm(payload, qmap, conf, shared_info, priority)
 
         slog.debug("BaseModule run end")
         return status
@@ -53,10 +54,12 @@ class BaseModule(object):
         return True
 
     @classmethod
-    def package_alarm(cls, payload, qmap, conf, priority = 2):
-        tnode =  conf.get('local_info').get('tnode')
+    def package_alarm(cls, payload, qmap, conf, shared_info, priority = 2):
+        tnode =  shared_info.get('tnode')
         if not tnode:
             slog.warn("tnode empty, not ready for alarm")
+            # TODO(smaug)
+            shared_info['tnode'] = 'xxxxxxxxxxx@127.0.0.1:9000'
             return False
         if not qmap.get(priority):
             slog.error("priority:{0} not support".format(priority))

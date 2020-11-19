@@ -33,15 +33,16 @@ class P2pModule(BaseModule):
 
     # @param line log line
     # @param qmap  map of queue with priority
+    # @param shared_info  shared info between all process
     # @param conf p2p module config
     #
     # @return
     @classmethod
-    def run(cls, payload, qmap, conf):
+    def run(cls, payload, qmap, conf, shared_info):
         slog.debug("P2pModule run begin")
 
         priority = 2
-        status = cls.package_alarm(payload, qmap, conf, priority)
+        status = cls.package_alarm(payload, qmap, conf, shared_info, priority)
 
         slog.debug("P2pModule run end")
         return status

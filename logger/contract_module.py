@@ -33,11 +33,12 @@ class ContractModule(BaseModule):
 
     # @param line log line
     # @param qmap  map of queue with priority
+    # @param shared_info  shared info between all process
     # @param conf module config
     #
     # @return
     @classmethod
-    def run(cls, payload, qmap, conf = None):
+    def run(cls, payload, qmap, shared_info, conf = None):
         slog.debug("ContractModule run begin")
 
         priority = 2

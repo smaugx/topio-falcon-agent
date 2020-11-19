@@ -18,6 +18,7 @@ class ReportAlarm(object):
         self.conf_ = conf
         self.qmap_ = qmap
 
+    # will block here
     def run(self):
         # rename
         return self.get_alarmq_with_priority()
@@ -32,6 +33,7 @@ class ReportAlarm(object):
             pass
         return alarm_payload
 
+    # will block here
     def get_alarmq_with_priority(self):
         if not self.qmap_:
             return None
@@ -52,7 +54,6 @@ class ReportAlarm(object):
                     self.report_remote(alarm_payload)
 
             time.sleep(0.2)
-            slog.debug("report alarm done one loop")
 
 
     def report_remote(self, alarm_payload):
