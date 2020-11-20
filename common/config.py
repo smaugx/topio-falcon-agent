@@ -7,7 +7,7 @@ QMAXSIZE = 10000
 
 
 AnalyzeConfig = {
-        'worker': 4,
+        'worker': 2,
         'p2p': {
             'global_sample_rate': 1000,  # sample_rate%。
             'alarm_pack_num': 2,   # upload alarm size one time
@@ -47,7 +47,7 @@ AnalyzeConfig = {
 
 
 ReportConfig = {
-        'worker': 4,
+        'worker': 2,
         'url': 'http://apigateway.dt-dn1.com:9230/report/log/async',
         #'url': 'http://gatewaylogv2.top123.info:9230/report/log/async',
         }
