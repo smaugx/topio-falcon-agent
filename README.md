@@ -2,4 +2,5 @@
 agent of topio-falcon
 
 # 设计图
-详见 topio-falcon-agent.jpeg
+
+![](https://raw.githubusercontent.com/topsmaug/topio-falcon-agent/main/topio-falcon-agent.jpeg)
