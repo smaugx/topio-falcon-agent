@@ -70,9 +70,10 @@ ModuleMap = {
 def run_logeater():
     global LogQueue
 
+    # list of path
     log_path = config.LogEaterConfig.get('log_path')
     if not log_path:
-        slog.error("invalid log_path:{0}".format(log_path))
+        slog.error("empty log_path, eat log failed")
         return
 
     logeater = LogEater(LogQueue, log_path)

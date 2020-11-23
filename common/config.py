@@ -53,5 +53,9 @@ ReportConfig = {
         }
 
 LogEaterConfig = {
-        "log_path": "/tmp/rec1/xtop.log"
+        'log_path': [
+            '/tmp/rec1/xtop.log',
+            '/tmp/rec2/xtop.log',
+            '/tmp/rec3/xtop.log',
+            ]
         }

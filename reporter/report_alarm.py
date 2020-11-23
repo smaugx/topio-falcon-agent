@@ -106,34 +106,36 @@ class ReportAlarm(object):
         '''
 
         msg = {
-                "userid":1,
-                "appVersion":"",
-                "country":"",
-                "sign":"",
-                "netType":"",
-                "bid":"",
-                "idfa":"",
-                "osVersion":"",
-                "osType":1,
-                "appName":"",
-                "deviceid":"",
-                "sessionid":"",
-                "ip":"",
-                "sourceSystem":"",
-                "data": [
-                    {
-                        "properties": alarm_payload,
-                        "event":"topnetwork", # ??
-                        "category":"topnetwork",
-                        "time": alarm_payload.get('timestamp')
-                    }
-                ]
+                "data": {
+                    "userid":1,
+                    "appVersion":"",
+                    "country":"",
+                    "sign":"",
+                    "netType":"",
+                    "bid":"",
+                    "idfa":"",
+                    "osVersion":"",
+                    "osType":1,
+                    "appName":"",
+                    "deviceid":"",
+                    "sessionid":"",
+                    "ip":"",
+                    "sourceSystem":"",
+                    "data": [
+                        {
+                            "properties": alarm_payload,
+                            "event":"topnetwork", # ??
+                            "category":"topnetwork",
+                            "time": alarm_payload.get('timestamp')
+                        }
+                    ]
+                }
         }
 
 
 
         self.F.write('{0}\n'.format(json.dumps(msg)))
-        slog.debug(json.dumps(msg, indent=4))
+        #slog.debug(json.dumps(msg, indent=4))
         msg_str  = json.dumps(msg)
         payload['msg'] = msg_str
         digest = ''
