@@ -48,10 +48,10 @@ AnalyzeConfig = {
 
 ReportConfig = {
         'worker': 2,
-        'url': 'http://apigateway.dt-dn1.com:9230/report/log/async',
-        #'url': 'http://gatewaylogv2.top123.info:9230/report/log/async',
+        #'url': 'http://apigateway.dt-dn1.com:9230/report/log/async',
+        'url': 'http://gatewaylogv2.top123.info:9230/report/log/async',
         }
 
 LogEaterConfig = {
-        "log_path": "./log/xtop.log"
+        "log_path": "/tmp/rec1/xtop.log"
         }

@@ -17,6 +17,7 @@ class ReportAlarm(object):
     def __init__(self, qmap, conf):
         self.conf_ = conf
         self.qmap_ = qmap
+        self.F = open("./log/alarm.data", 'a', encoding='utf8')
 
     # will block here
     def run(self):
@@ -58,9 +59,31 @@ class ReportAlarm(object):
 
     def report_remote(self, alarm_payload):
         '''
-        url = 'http://apigateway.dt-dn1.com:9230/report/log/async'
-        url = 'http://gatewaylogv2.top123.info:9230/report/log/async'
+        # alarm_payload example:
+        {
+            "priority":2,
+            "alarmid":"288c0c2c-414a-4ba1-90ac-750a7883d2ac",
+            "tnode":"xxxxxxxxxxx@127.0.0.1:9000",
+            "timestamp":1605855035,
+            "payload":{
+                "category":"p2p",
+                "tag":"kad_info",
+                "type":"real_time",
+                "content":{
+                    "local_nodeid":"000000010000ffffffffffffffffffff000000004e63488d763c618ed9d63aba49c11586",
+                    "service_type":9223090561894842368,
+                    "xnetwork_id":0,
+                    "zone_id":1,
+                    "cluster_id":0,
+                    "group_id":0,
+                    "neighbours":13,
+                    "public_ip":"127.0.0.1",
+                    "public_port":9003
+                }
+            }
+        }
         '''
+
         url = self.conf_.get('url')
         if not url:
             return False
@@ -71,6 +94,7 @@ class ReportAlarm(object):
                 'sign': ''
                 }
 
+        '''
         msg = {
                 'data': [
                     {
@@ -79,7 +103,36 @@ class ReportAlarm(object):
                     },
                     ]
                 }
+        '''
 
+        msg = {
+                "userid":1,
+                "appVersion":"",
+                "country":"",
+                "sign":"",
+                "netType":"",
+                "bid":"",
+                "idfa":"",
+                "osVersion":"",
+                "osType":1,
+                "appName":"",
+                "deviceid":"",
+                "sessionid":"",
+                "ip":"",
+                "sourceSystem":"",
+                "data": [
+                    {
+                        "properties": alarm_payload,
+                        "event":"topnetwork", # ??
+                        "category":"topnetwork",
+                        "time": alarm_payload.get('timestamp')
+                    }
+                ]
+        }
+
+
+
+        self.F.write('{0}\n'.format(json.dumps(msg)))
         slog.debug(json.dumps(msg, indent=4))
         msg_str  = json.dumps(msg)
         payload['msg'] = msg_str

@@ -30,6 +30,7 @@ class LogEater(object):
             slog.error("log_queue invalid, eat log failed")
             return
 
+        slog.info("eat log:{0}".format(self.log_path_))
         f = subprocess.Popen(['tail','-F',self.log_path_], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         p = select.poll()
         p.register(f.stdout)

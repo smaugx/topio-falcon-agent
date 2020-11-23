@@ -11,9 +11,9 @@ from logger.log_eater import LogEater
 from logger.metrics_filter  import MetricsFilter
 
 # every kind of modules
+from logger.base_module import BaseModule
 from logger.demo_module import DemoModule
 from logger.p2p_module import P2pModule
-from logger.contract_module import ContractModule
 
 # report alarm to remote
 from reporter.report_alarm import ReportAlarm 
@@ -36,9 +36,30 @@ AlarmQueueMap = {
 
 # register module here(readonly, use in multiprocess)
 ModuleMap = {
-        'demo': DemoModule.run,
-        'p2p': P2pModule.run,
-        'contract': ContractModule.run,
+        'demo'        : DemoModule.run,
+        'p2p'         : P2pModule.run,
+
+        'zone'        : BaseModule.run,
+        'zec'         : BaseModule.run,
+        'xvm'         : BaseModule.run,
+        'vnetwork'    : BaseModule.run,
+        'vhost'       : BaseModule.run,
+        'txpool'      : BaseModule.run,
+        'txexecutor'  : BaseModule.run,
+        'transport'   : BaseModule.run,
+        'table'       : BaseModule.run,
+        'sync-module' : BaseModule.run,
+        'sync'        : BaseModule.run,
+        'store'       : BaseModule.run,
+        'reg'         : BaseModule.run,
+        'rec'         : BaseModule.run,
+        'mbus'        : BaseModule.run,
+        'election'    : BaseModule.run,
+        'data'        : BaseModule.run,
+        'cons'        : BaseModule.run,
+        'book'        : BaseModule.run,
+        'blockstore'  : BaseModule.run,
+        'block'       : BaseModule.run,
         }
 
 
