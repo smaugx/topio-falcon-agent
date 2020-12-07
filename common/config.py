@@ -54,8 +54,9 @@ ReportConfig = {
 
 LogEaterConfig = {
         'log_path': [
+            '/chain/log/xtop.log',
+            '/root/topnetwork/log/xtop.log',
+            '/home/topuser/topnetwork/log/xtop.log',
             '/tmp/rec1/xtop.log',
-            '/tmp/rec2/xtop.log',
-            '/tmp/rec3/xtop.log',
             ]
         }
