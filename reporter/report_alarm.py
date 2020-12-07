@@ -18,6 +18,7 @@ class ReportAlarm(object):
         self.conf_ = conf
         self.qmap_ = qmap
         self.F = open("./log/alarm.data", 'a', encoding='utf8')
+        self.ss_ = requests.Session()
 
     # will block here
     def run(self):
@@ -149,7 +150,7 @@ class ReportAlarm(object):
         slog.debug(json.dumps(payload, indent=4))
 
         try:
-            r = requests.post(url, data = json.dumps(payload))
+            r = self.ss_.post(url, data = json.dumps(payload))
             if r.status_code == 200:
                 slog.debug('post ok')
             slog.debug(r.text)

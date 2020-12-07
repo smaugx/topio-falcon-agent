@@ -22,26 +22,30 @@ class MetricsFilter(object):
         slog.debug("line:{0}".format(line))
 
         payload = None
-        if line[-1] == '\n':
-            line = line[:-1]
-
-        line = line.decode('utf8')
-        if line.find("metrics") == -1:
-            return None
-
-        sp_line = line.split('[metrics]')
-        if not sp_line or len(sp_line) != 2:
-            slog.warn("found invalid metrics line:{0}".format(line))
-            return None
-
         try:
-            payload = json.loads(sp_line[1])
-        except Exception as e:
-            slog.warn("invalid json line:{0}, load failed".format(line))
-            return None
+            if line[-1] == '\n':
+                line = line[:-1]
 
-        if not payload.get('category'):
-            slog.warn("invalid json line:{0}, get field category failed".format(line))
+            line = line.decode('utf8')
+            if line.find("metrics") == -1:
+                return None
+
+            sp_line = line.split('[metrics]')
+            if not sp_line or len(sp_line) != 2:
+                slog.warn("found invalid metrics line:{0}".format(line))
+                return None
+
+            try:
+                payload = json.loads(sp_line[1])
+            except Exception as e:
+                slog.warn("invalid json line:{0}, load failed".format(line))
+                return None
+
+            if not payload.get('category'):
+                slog.warn("invalid json line:{0}, get field category failed".format(line))
+                return None
+        except Exception as e:
+            slog.warn("catch exception:{0} line:{1}".format(e, line))
             return None
         
         # finally get payload we want

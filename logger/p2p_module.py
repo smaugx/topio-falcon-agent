@@ -41,6 +41,18 @@ class P2pModule(BaseModule):
     def run(cls, payload, qmap, conf, shared_info):
         slog.debug("P2pModule run begin")
 
+        if not shared_info.get('tnode'):
+            if payload.get('tag') and payload.get('tag') == 'kad_info':
+                if payload.get('content') and payload.get('content').get('local_nodeid'):
+                    if payload.get('content').get('local_nodeid').startswith("ffffff"):
+                        root_id = payload.get('content').get('local_nodeid')
+                        public_ip = payload.get('content').get('public_ip')
+                        public_port = payload.get('content').get('public_port')
+                        tnode = '{0}@{1}:{2}'.format(root_id, public_ip, public_port)
+                        shared_info['tnode'] = tnode
+                        shared_info['ip'] = public_ip
+                        slog.warn("set tnode:{0}".format(tnode))
+
         priority = 2
         status = cls.package_alarm(payload, qmap, conf, shared_info, priority)
 

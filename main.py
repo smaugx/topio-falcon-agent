@@ -2,6 +2,8 @@
 #-*- coding:utf8 -*-
 
 import time
+import os
+import json
 from multiprocessing import Process, Queue, Lock, Manager
 
 # log eater
@@ -38,28 +40,7 @@ AlarmQueueMap = {
 ModuleMap = {
         'demo'        : DemoModule.run,
         'p2p'         : P2pModule.run,
-
-        'zone'        : BaseModule.run,
-        'zec'         : BaseModule.run,
-        'xvm'         : BaseModule.run,
-        'vnetwork'    : BaseModule.run,
-        'vhost'       : BaseModule.run,
-        'txpool'      : BaseModule.run,
-        'txexecutor'  : BaseModule.run,
-        'transport'   : BaseModule.run,
-        'table'       : BaseModule.run,
-        'sync-module' : BaseModule.run,
-        'sync'        : BaseModule.run,
-        'store'       : BaseModule.run,
-        'reg'         : BaseModule.run,
-        'rec'         : BaseModule.run,
-        'mbus'        : BaseModule.run,
-        'election'    : BaseModule.run,
-        'data'        : BaseModule.run,
-        'cons'        : BaseModule.run,
-        'book'        : BaseModule.run,
-        'blockstore'  : BaseModule.run,
-        'block'       : BaseModule.run,
+        'default'     : BaseModule.run,
         }
 
 
@@ -101,8 +82,9 @@ def run_loganalyzer(shared_local_info):
         category = payload.get('category')
         ModuleFunc = ModuleMap.get(category)
         if not ModuleFunc:
-            slog.error("category:{0} not support, filter failed".format(category))
-            continue
+            #slog.error("category:{0} not support, filter failed".format(category))
+            #continue
+            ModuleFunc = ModuleMap.get('default')
 
         conf = config.AnalyzeConfig.get(category)
         ModuleFunc(payload, AlarmQueueMap, conf, shared_local_info)
@@ -116,12 +98,22 @@ def run_logreporter():
 
 
 if __name__ == '__main__':
+    shm_path = '/dev/shm/topio-falcon-shared'
     with Manager() as MG:
         # shared dict with other process
         shared_local_info = MG.dict()
-        shared_local_info['tnode'] = ''
-        shared_local_info['ip'] = ''
 
+        sh_dict = {}
+        if os.path.exists(shm_path):
+            try:
+                sh_dict = json.loads(open(shm_path, 'r').read())
+                print("load local shared info from {0}:".format(shm_path))
+                print(json.dumps(sh_dict, indent=4))
+            except Exception as e:
+                pass
+
+        shared_local_info['tnode'] = sh_dict.get('tnode')
+        shared_local_info['ip'] = sh_dict.get('ip')
 
         # create log eater process
         pg_logeater = Process(target=run_logeater, args=())
@@ -141,13 +133,21 @@ if __name__ == '__main__':
 
 
         # start all process
+        print("start log eater worker")
         pg_logeater.start()
 
+        print("start log analyze worker")
         for p in pg_loganalyzers:
             p.start()
 
+        print("start log reporter worker")
         for p in pg_logreporters:
             p.start()
 
         while True:
-            time.sleep(1)
+            time.sleep(60)
+            with open("/dev/shm/topio-falcon-shared", 'w', encoding = 'utf-8') as fout:
+                sh_dict = {}
+                for k,v in shared_local_info.items():
+                    sh_dict[k] = v
+                fout.write(json.dumps(sh_dict))

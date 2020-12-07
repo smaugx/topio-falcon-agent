@@ -58,8 +58,6 @@ class BaseModule(object):
         tnode =  shared_info.get('tnode')
         if not tnode:
             slog.warn("tnode empty, not ready for alarm")
-            # TODO(smaug)
-            shared_info['tnode'] = 'xxxxxxxxxxx@127.0.0.1:9000'
             return False
         if not qmap.get(priority):
             slog.error("priority:{0} not support".format(priority))
